@@ -10,7 +10,7 @@ const spadesCard = []
 const clubsCard = []
 const diamondsCard = []
 const cardName = ['deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf', 'dix', 'valet', 'dame', 'roi', 'as']
-const family = ['coeur', 'carreau', 'pique', 'trêfle']
+const family = ['Coeur', 'Carreau', 'Pique', 'Trêfle']
 
 for (let j = 0; j < cardName.length; j++) {
     heartsCard.push(new Card(`${cardName[j]}`, `${family[0]}`, j + 2))
@@ -34,52 +34,90 @@ const cardDeck = cardDeckEmpty.concat(heartsCard, spadesCard, diamondsCard, club
 
 shuffleDeck(cardDeck)
 
-let myPoggersDeck = []
-let IABoomerDeck = []
+let playerDeck = []
+let IADeck = []
 
 function addCardForMe() {
-    myPoggersDeck.push(cardDeck[0])
+    playerDeck.push(cardDeck[0])
 }
 
 function addCardForIA() {
-    IABoomerDeck.push(cardDeck[0])
+    IADeck.push(cardDeck[0])
 }
 
 for (let i = 0; i < cardDeck.length; i++) {
     let mod = i % 2
     if (mod === 0) {
-        myPoggersDeck.push(cardDeck[i])
+        playerDeck.push(cardDeck[i])
     } else {
-        IABoomerDeck.push(cardDeck[i])
+        IADeck.push(cardDeck[i])
     }
 }
-
-console.log('taille mon deck: ', myPoggersDeck.length, myPoggersDeck)
-console.log("taille du deck de l'ia: ", IABoomerDeck.length, IABoomerDeck)
+console.log('taille mon deck: ', playerDeck.length, playerDeck)
+console.log("taille du deck de l'ia: ", IADeck.length, IADeck)
 console.log("taille du deck initial: ", cardDeck.length, cardDeck)
 
-do {
-    let posOneMyDeck = myPoggersDeck[0]
-    let posOneIADeck = IABoomerDeck[0]
+let rewards = []
 
-    myPoggersDeck.shift()
-    console.log('Je pose ma carte: ', posOneMyDeck)
-    IABoomerDeck.shift()
-    console.log("L'IA pose sa carte: ", posOneIADeck)
+function startRound(firstCardPlayer, firstCardIA) {
+    console.log('DEBUT DU TOUR: ', 'MA FIRST CARD: ', firstCardPlayer, 'FIRST CARD IA: ', firstCardIA)
+    console.log('Je pose ma carte: ', firstCardPlayer, 'taille deck: ', `${playerDeck.length}`)
+    console.log("L'IA pose sa carte: ", firstCardIA, 'taille deck: ', `${IADeck.length}`)
+}
 
-    if (posOneMyDeck.points > posOneIADeck.points) {
-        console.log("J'ai remporté ce tour !")
-        myPoggersDeck.push(posOneIADeck)
-        myPoggersDeck.push(posOneMyDeck)
+function playerWin(playerDeck) {
+    console.log("J'ai remporté ce tour !")
+    playerDeck.push(...rewards)
+    console.log(`Je ramasse ${rewards.length} cartes !`)
+    rewards.splice(0, rewards.length)
+}
 
-    } else if (posOneMyDeck.points < posOneIADeck.points) {
-        console.log("L'IA a remporté ce tour !")
-        IABoomerDeck.push(posOneIADeck)
-        IABoomerDeck.push(posOneMyDeck)
+function IAWin(IADeck) {
+    console.log("L'IA a remporté ce tour !")
+    IADeck.push(...rewards)
+    console.log(`L\'IA ramasse ${rewards.length} cartes !`)
+    rewards.splice(0, rewards.length)
+}
+
+function hiddenCard(playerDeck, IADeck) {
+    console.log('=======================================================================================')
+    console.log("Je pose une carte face cachée")
+    rewards.push(playerDeck.shift())
+    console.log(rewards)
+    console.log("L'IA pose une carte face cachée")
+    rewards.push(IADeck.shift())
+    console.log(rewards)
+    return round()
+}
+
+function round() {
+
+    rewards.unshift(playerDeck[0], IADeck[0])
+    playerDeck.shift()
+    IADeck.shift()
+    console.log('rewards:', rewards)
+    startRound(rewards[0], rewards[1])
+
+    if (rewards[0].points > rewards[1].points) {
+        playerWin(playerDeck)
+
+    } else if (rewards[0].points < rewards[1].points) {
+        IAWin(IADeck)
     } else {
-       
+        hiddenCard(playerDeck, IADeck)
     }
-    console.log('Il me reste: ', myPoggersDeck.length, ' cartes')
-    console.log('Il reste à l\'IA: ', IABoomerDeck.length, ' cartes')
-} while (myPoggersDeck.length > 0 && IABoomerDeck.length > 0)
+    console.log('Il me reste: ', playerDeck.length, ' cartes')
+    console.log('Il reste à l\'IA: ', IADeck.length, ' cartes')
 
+}
+
+
+while (playerDeck.length > 0 && IADeck.length > 0) {
+    round()
+}
+
+if (playerDeck.length === 0) {
+    return console.log("Félicitation à l'IA ! Elle vient de remporter la partie")
+} else if (IADeck.length === 0) {
+    return console.log("Super ! Je viens de remporter cette partie !")
+}
